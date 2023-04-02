@@ -426,8 +426,7 @@ namespace Duskhaven_launcher
                 Status = LauncherStatus.downloadingGame;
                 webClient.DownloadProgressChanged += new DownloadProgressChangedEventHandler(DownloadProgressCallback);
                 webClient.DownloadFileCompleted += new AsyncCompletedEventHandler(DownloadWotlkClientCompleteCallback);
-                webClient.DownloadFileAsync(new Uri($"https://undesign.be/QuestHelper.zip"), clientZip);
-                //webClient.DownloadFileAsync(new Uri($"{uri}WoW%203.3.5.zip"), clientZip);
+                webClient.DownloadFileAsync(new Uri($"{uri}WoW%203.3.5.zip"), clientZip);
 
 
 
