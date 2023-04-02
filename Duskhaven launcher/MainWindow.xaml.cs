@@ -10,6 +10,7 @@ using System.IO.Packaging;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.Remoting.Channels;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -117,6 +118,8 @@ namespace Duskhaven_launcher
 
         private void CheckForUpdates()
         {
+            fileUpdateList.Clear();
+            fileList.Clear();   
             Status = LauncherStatus.checking;
             AddActionListItem("checking local files");
             
@@ -270,7 +273,6 @@ namespace Duskhaven_launcher
                     filePath = Path.Combine(filePath, "data", "enGB", file);
                 }
             }
-            Console.WriteLine(filePath);
             return filePath;
         }
         private void AddActionListItem(string action)
@@ -345,12 +347,7 @@ namespace Duskhaven_launcher
             try
             {
                 AddActionListItem($"Installing {e.UserState}");
-                //string onlineVersion = ((Version)e.UserState).ToString();
 
-                //ZipFile.ExtractToDirectory(gameZip, rootPath);
-                //File.Delete(gameZip);
-
-                //File.WriteAllText(versionFile, Version.zero.ToString());
             }
             catch (Exception ex)
             {
@@ -363,18 +360,44 @@ namespace Duskhaven_launcher
 
         private void DownloadWotlkClientCompleteCallback(object sender, AsyncCompletedEventArgs e)
         {
+            AddActionListItem($"Installing Wotlk 3.3.5 client");
+            VersionText.Text = "Extracting Wotlk files to directory...";
             try
             {
-                AddActionListItem($"Installing Wotlk 3.3.5 client");
-                //string onlineVersion = ((Version)e.UserState).ToString();
-
+                
                 ZipFile.ExtractToDirectory(clientZip, rootPath);
+                using (var archive = ZipFile.OpenRead(clientZip))
+                {
+                    // Loop through the archive entries
+                    foreach (var entry in archive.Entries)
+                    {
+                        // Check if the entry is located in the desired directory
+                        if (entry.FullName.StartsWith("WoW 3.3.5"))
+                        {
+                            string newName = entry.FullName.Substring(entry.FullName.IndexOf("/") + 1);
+                            Console.WriteLine(newName);
+                            // If the entry is a folder, create the folder
+                            if (entry.FullName.EndsWith("/"))
+                            {
+                                Console.WriteLine(entry.FullName);
+                                
+                                string folderPath = Path.Combine(rootPath, newName);
+                                Directory.CreateDirectory(folderPath);
+                            }
+                            else
+                            {
+                                // If the entry is a file, extract the file to the target directory
+                                string targetFilePath = Path.Combine(@rootPath, newName);
+                                entry.ExtractToFile(targetFilePath, true);
+                            }
+                        }
+                    }
+                }
+                Directory.Delete(Path.Combine(rootPath, "WoW 3.3.5"), true);
                 File.Delete(clientZip);
-
-                //File.WriteAllText(versionFile, Version.zero.ToString());
-                //VersionText.Text = Version.zero.ToString();
-
-                Status = LauncherStatus.ready;
+                VersionText.Text = "Extracting Done...";
+                AddActionListItem($"Installing done");
+                CheckForUpdates();
             }
             catch (Exception ex)
             {
@@ -386,8 +409,8 @@ namespace Duskhaven_launcher
 
         private void DownloadProgressCallback(object sender, DownloadProgressChangedEventArgs e)
         {
-            string downloadedMBs = Math.Round(e.BytesReceived / 1024.0 / 1024.0, 3).ToString() + " MB";
-            string totalMBs = Math.Round(e.TotalBytesToReceive / 1024.0 / 1024.0, 3).ToString() + " MB";
+            string downloadedMBs = Math.Round(e.BytesReceived / 1024.0 / 1024.0, 0).ToString() + " MB";
+            string totalMBs = Math.Round(e.TotalBytesToReceive / 1024.0 / 1024.0, 0).ToString() + " MB";
             // Displays the operation identifier, and the transfer progress.
             VersionText.Text = $"{(string)e.UserState}    downloaded {downloadedMBs} of {totalMBs} bytes. {e.ProgressPercentage} % complete...";
             dlProgress.Visibility = Visibility.Visible;
@@ -403,8 +426,12 @@ namespace Duskhaven_launcher
                 Status = LauncherStatus.downloadingGame;
                 webClient.DownloadProgressChanged += new DownloadProgressChangedEventHandler(DownloadProgressCallback);
                 webClient.DownloadFileCompleted += new AsyncCompletedEventHandler(DownloadWotlkClientCompleteCallback);
-                webClient.DownloadFileAsync(new Uri($"{uri}WoW%203.3.5.zip"), clientZip);
-                
+                webClient.DownloadFileAsync(new Uri($"https://undesign.be/QuestHelper.zip"), clientZip);
+                //webClient.DownloadFileAsync(new Uri($"{uri}WoW%203.3.5.zip"), clientZip);
+
+
+
+
             }
             catch (Exception ex)
             {
