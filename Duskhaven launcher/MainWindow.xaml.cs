@@ -185,11 +185,13 @@ namespace Duskhaven_launcher
                 }
 
             }
+            Console.WriteLine(fileUpdateList.Count);
+            Console.WriteLine(fileList.Count);
             if (fileUpdateList.Count == 0)
             {
                 Status = LauncherStatus.ready;
             }
-
+            
             else if (fileUpdateList.Count == fileList.Count)
             {
                 Status = LauncherStatus.install;
@@ -246,6 +248,10 @@ namespace Duskhaven_launcher
             }
             if (file.Contains(".mpq") || file.Contains(".MPQ"))
             {
+                if(!Directory.Exists(Path.Combine(filePath, "data")))
+                {
+                    Directory.CreateDirectory(Path.Combine(filePath, "data"));
+                }
                 filePath = Path.Combine(filePath, "data", file);
             }
             if (file.Contains(".wtf"))
@@ -258,7 +264,13 @@ namespace Duskhaven_launcher
                 {
                     filePath = Path.Combine(filePath, "data", "enUS", file);
                 }
+                else
+                {
+                    Directory.CreateDirectory(Path.Combine(filePath, "data", "enGB"));
+                    filePath = Path.Combine(filePath, "data", "enGB", file);
+                }
             }
+            Console.WriteLine(filePath);
             return filePath;
         }
         private void AddActionListItem(string action)
@@ -283,15 +295,8 @@ namespace Duskhaven_launcher
                     //_onlineVersion = new Version(webClient.DownloadString("version file link"));
 
                 }
-                foreach(string file in fileUpdateList) {
-                    WebClient webClient = new WebClient();
-                    AddActionListItem($"Downloading {file}");
-                    webClient.DownloadProgressChanged += new DownloadProgressChangedEventHandler(DownloadProgressCallback);
-                    webClient.DownloadFileCompleted += new AsyncCompletedEventHandler(DownloadGameCompleteCallback);
-                    webClient.DownloadFileAsync(new Uri($"{uri}{file}"), getFilePath(file), file);
-                }
 
-
+                DownloadFiles(fileUpdateList,0) ;
             }
             catch (Exception ex)
             {
@@ -301,6 +306,40 @@ namespace Duskhaven_launcher
             }
 
         }
+
+        private void DownloadFiles(List<string> files, int index)
+        {
+            WebClient webClient = new WebClient();
+            webClient.DownloadFileCompleted += (sender, e) =>
+            {
+                if (e.Error == null)
+                {
+                    
+                    if (index < files.Count - 1)
+                    {
+                        DownloadFiles(files, index + 1);
+                    }
+                    else if( index == files.Count -1)
+                    {
+                        Status = LauncherStatus.ready;
+                        VersionText.Text = "Ready to enjoy Duskhaven";
+                    }
+                }
+                else
+                {
+                    MessageBox.Show($"Error Downloading game files:{e.Error}");
+                    AddActionListItem($"Error Downloading {files[index]}");
+                }
+            };
+            Console.WriteLine($"{uri}{files[index]}");
+            AddActionListItem($"Downloading {files[index]}");
+            webClient.DownloadProgressChanged += new DownloadProgressChangedEventHandler(DownloadProgressCallback);
+            webClient.DownloadFileCompleted += new AsyncCompletedEventHandler(DownloadGameCompleteCallback);
+            webClient.DownloadFileAsync(new Uri($"{uri}{files[index]}"), getFilePath(files[index]), files[index]);
+           
+        }
+
+
         private void DownloadGameCompleteCallback(object sender, AsyncCompletedEventArgs e)
         {
             try
@@ -312,9 +351,6 @@ namespace Duskhaven_launcher
                 //File.Delete(gameZip);
 
                 //File.WriteAllText(versionFile, Version.zero.ToString());
-                VersionText.Text = "Ready to enjoy Duskhaven";
-
-                Status = LauncherStatus.ready;
             }
             catch (Exception ex)
             {
@@ -379,7 +415,7 @@ namespace Duskhaven_launcher
         }
         private void setButtonState()
         {
-            if (Status == LauncherStatus.ready || Status == LauncherStatus.failed)
+            if (Status == LauncherStatus.ready || Status == LauncherStatus.failed || Status == LauncherStatus.install)
             {
                 DLButton.IsEnabled = true;
                 PlayButton.IsEnabled = true;
