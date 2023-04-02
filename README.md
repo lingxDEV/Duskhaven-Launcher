@@ -3,7 +3,7 @@
 ## THIS IS NOT AN OFFICIAL DUSKHAVEN LAUNCHER, IT IS A PASSION PROJECT TO MAKE IT EASIER TO START WITH DUSKHAVEN
 
 ## Download instructions
-- [download the latest version](https://github.com/laurensmarcelis/Duskhaven-Laucher/releases)
+- [download the latest version](https://github.com/laurensmarcelis/Duskhaven-Laucher/releases) (only executable is needed)
 ## Install instructions
 - Add this file in a folder you watn to install duskhaven in
 - If you do not have a Wotlk 3.5.5 client
