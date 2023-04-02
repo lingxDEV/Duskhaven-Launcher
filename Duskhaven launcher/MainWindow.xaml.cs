@@ -23,7 +23,8 @@ namespace Duskhaven_launcher
         failed,
         downloadingGame,
         downloadingUpdate,
-        checking
+        checking,
+        install
     }
 
 
@@ -35,10 +36,9 @@ namespace Duskhaven_launcher
     {
 
         private string rootPath;
-        private string mpqPath;
         private string clientZip;
         private string gameExe;
-        private string wtfPath;
+
         private List<string> fileList = new List<string>();
         private List<string> fileUpdateList = new List<string>();
         private LauncherStatus _status;
@@ -57,6 +57,9 @@ namespace Duskhaven_launcher
                         break;
                     case LauncherStatus.ready:
                         PlayButton.Content = "Play";
+                        break;
+                    case LauncherStatus.install:
+                        PlayButton.Content = "Install";
                         break;
                     case LauncherStatus.failed:
                         PlayButton.Content = "Update Failed";
@@ -80,23 +83,20 @@ namespace Duskhaven_launcher
             InitializeComponent();
 
             rootPath = Directory.GetCurrentDirectory();
-            rootPath = "C:\\Games\\duskhaven\\";
-            mpqPath = Path.Combine(rootPath, "data");
-            wtfPath = Path.Combine(mpqPath, "data");
             gameExe = Path.Combine(rootPath, "wow.exe");
             clientZip = Path.Combine(rootPath, "WoW%203.3.5.zip");
             
         }
 
-        private async void Window_ContentRendered(object sender, EventArgs e)
+        private void Window_ContentRendered(object sender, EventArgs e)
         {
             setButtonState();
             CheckForUpdates();
         }
 
-        private async void PlayButton_Click(object sender, RoutedEventArgs e)
+        private void PlayButton_Click(object sender, RoutedEventArgs e)
         {
-
+            
             if (File.Exists(gameExe) && Status == LauncherStatus.ready)
             {
                 ProcessStartInfo startInfo = new ProcessStartInfo(gameExe);
@@ -109,11 +109,10 @@ namespace Duskhaven_launcher
             {
                 CheckForUpdates();
             }
-        }
-
-        private void CheckRemoteFiles()
-        {
-
+            else if (Status == LauncherStatus.install)
+            {
+                InstallGameFiles(false);
+            }
         }
 
         private void CheckForUpdates()
@@ -190,9 +189,10 @@ namespace Duskhaven_launcher
             {
                 Status = LauncherStatus.ready;
             }
+
             else if (fileUpdateList.Count == fileList.Count)
             {
-                InstallGameFiles(false);
+                Status = LauncherStatus.install;
             }
             else
             {
@@ -312,7 +312,7 @@ namespace Duskhaven_launcher
                 //File.Delete(gameZip);
 
                 //File.WriteAllText(versionFile, Version.zero.ToString());
-                VersionText.Text = Version.zero.ToString();
+                VersionText.Text = "Ready to enjoy Duskhaven";
 
                 Status = LauncherStatus.ready;
             }
