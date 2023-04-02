@@ -17,4 +17,4 @@
   - it will only download files that are out of date
 
 ## thanks
-thank you duskhaven for being awesoem and hosting your files on a good host and jsut allround being an amazing private server
+thank you duskhaven for being awesome and allround being an amazing private server. Always improving and fixing.
