@@ -426,9 +426,13 @@ namespace Duskhaven_launcher
             }
         }
 
+        private void RegisterButton_Click(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Process.Start("https://duskhaven.servegame.com/account/register/");
+        }
     }
 
-   
+
     /* use when a version is available */
     struct Version
     {
