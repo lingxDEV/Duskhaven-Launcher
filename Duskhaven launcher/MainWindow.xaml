@@ -8,7 +8,7 @@
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
         ContentRendered="Window_ContentRendered"
-        Title="Duskhaven Launcher" Height="450" Width="800">
+        Title="Duskhaven Launcher" Height="450" Width="800" WindowStyle="None" Background="{x:Null}" Foreground="{x:Null}">
     <Grid>
         <Image Stretch="UniformToFill" Source="images/background.jpg" VerticalAlignment="Stretch" />
         <TextBlock Name="VersionText" VerticalAlignment="Bottom" HorizontalAlignment="Center" FontSize="20" Foreground="White" Panel.ZIndex="1" Width="800" TextAlignment="Center"/>
@@ -109,7 +109,7 @@
                 </TextBlock.Background>
             </TextBlock>
         </ScrollViewer>
-        <Button x:Name="Register" Content="register" Click="RegisterButton_Click" Height="60" FontSize="28" FontWeight="Bold" Margin="10,0,0,127" VerticalAlignment="Bottom" HorizontalAlignment="Left" MinWidth="150" Padding="10,1,10,3" BorderThickness="1" UseLayoutRounding="False" IsEnabled="True" Width="309" >
+        <Button x:Name="Register" Content="Register" Click="RegisterButton_Click" Height="60" FontSize="28" FontWeight="Bold" Margin="10,0,0,127" VerticalAlignment="Bottom" HorizontalAlignment="Left" MinWidth="150" Padding="10,1,10,3" BorderThickness="1" UseLayoutRounding="False" IsEnabled="True" Width="309" >
             <Button.Style>
 
                 <Style TargetType="{x:Type Button}">
@@ -155,5 +155,52 @@
                 </Style>
             </Button.Style>
         </Button>
+        <Image HorizontalAlignment="Left" Height="167" Margin="23,10,0,0" VerticalAlignment="Top" Width="284" Source="/logo.png"/>
+        <Button x:Name="CloseButton" Content="X" HorizontalAlignment="Left" Margin="767,10,0,0" VerticalAlignment="Top" BorderBrush="{x:Null}" Background="{x:Null}" Foreground="#FFE08821" Click="CloseButton_Clicked" FontFamily="Arial Black" FontSize="24">
+            <Button.Style>
+
+                <Style TargetType="{x:Type Button}">
+                    <Setter Property="Padding" Value="10,10,10,10"/>
+                    <Setter Property="Margin" Value="10,10,10,10"/>
+
+                    <Setter Property="Background">
+                        <Setter.Value>
+                            <SolidColorBrush Color="#121212" Opacity="0.9"/>
+                        </Setter.Value>
+                    </Setter>
+                    <Setter Property="Foreground">
+                        <Setter.Value>
+                            <SolidColorBrush Color="#FFE08821" Opacity="1"/>
+                        </Setter.Value>
+                    </Setter>
+                    <Setter Property="BorderBrush">
+                        <Setter.Value>
+                            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                <GradientStop Color="#FFE08821"/>
+                                <GradientStop Color="#FFFFDFBA" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Setter.Value>
+                    </Setter>
+
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type Button}">
+                                <Border Background="{TemplateBinding Background}">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                    <Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="#121212"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="Gray"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </Button.Style>
+        </Button> 
     </Grid>
 </Window>

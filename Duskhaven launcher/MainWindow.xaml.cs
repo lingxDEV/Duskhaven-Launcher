@@ -1,5 +1,7 @@
 ﻿using Discord;
+using Discord.Net;
 using Discord.WebSocket;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -10,11 +12,15 @@ using System.IO.Packaging;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Runtime.Remoting.Channels;
 using System.Security.Cryptography;
+using System.Security.Policy;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Markup;
 
 namespace Duskhaven_launcher
 {
@@ -25,7 +31,8 @@ namespace Duskhaven_launcher
         downloadingGame,
         downloadingUpdate,
         checking,
-        install
+        install,
+        launcherUpdate,
     }
 
 
@@ -39,7 +46,8 @@ namespace Duskhaven_launcher
         private string rootPath;
         private string clientZip;
         private string gameExe;
-
+        private string launcherExe;
+        private string dlUrl;
         private List<string> fileList = new List<string>();
         private List<string> fileUpdateList = new List<string>();
         private LauncherStatus _status;
@@ -71,6 +79,9 @@ namespace Duskhaven_launcher
                     case LauncherStatus.downloadingUpdate:
                         PlayButton.Content = "Downloading update";
                         break;
+                    case LauncherStatus.launcherUpdate:
+                            PlayButton.Content = "Update Launcher";
+                        break;
                     default:
                         break;
                 }
@@ -86,15 +97,63 @@ namespace Duskhaven_launcher
             rootPath = Directory.GetCurrentDirectory();
             gameExe = Path.Combine(rootPath, "wow.exe");
             clientZip = Path.Combine(rootPath, "WoW%203.3.5.zip");
-            
+            launcherExe = Path.Combine(rootPath, "Duskhaven launcher.exe");
+
+
         }
 
         private void Window_ContentRendered(object sender, EventArgs e)
         {
-            setButtonState();
-            CheckForUpdates();
-        }
+            
 
+            if(getLauncherVersion())
+            {
+                setButtonState();
+                CheckForUpdates();
+            }
+            
+        }
+        private bool getLauncherVersion()
+        {
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            Version assemblyVersion = assembly.GetName().Version;
+            Console.WriteLine($"Assembly version: {assemblyVersion}");
+
+            // Replace these values with your own
+            string owner = "laurensmarcelis";
+            string repo = "Duskhaven-Launcher";
+
+            // Get the latest release information from GitHub API
+            string apiUrl = $"https://api.github.com/repos/{owner}/{repo}/releases/latest";
+            HttpWebRequest apiRequest = WebRequest.CreateHttp(apiUrl);
+            apiRequest.UserAgent = "HttpClient";
+            apiRequest.Accept = "application/vnd.github.v3+json";
+            apiRequest.Method = "GET";
+
+            using (HttpWebResponse apiResponse = (HttpWebResponse)apiRequest.GetResponse())
+            {
+                using (StreamReader streamReader = new StreamReader(apiResponse.GetResponseStream()))
+                {
+                    string apiResponseString = streamReader.ReadToEnd();
+                    dynamic apiResponseData = JsonConvert.DeserializeObject(apiResponseString);
+                    string tagName = apiResponseData["tag_name"];
+                    if (tagName == assemblyVersion.ToString() )
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        AddActionListItem($"Launcher out of date, newest version is {tagName}, your version is {assemblyVersion.ToString()}");
+                        Status = LauncherStatus.launcherUpdate;
+                        Console.WriteLine(apiResponseData["assets"][0]["browser_download_url"]);
+                        dlUrl = apiResponseData["assets"][0]["browser_download_url"];
+                        return false;
+                    }
+
+
+                }
+            }
+        }
         private void PlayButton_Click(object sender, RoutedEventArgs e)
         {
             
@@ -114,8 +173,74 @@ namespace Duskhaven_launcher
             {
                 InstallGameFiles(false);
             }
+            else if (Status == LauncherStatus.launcherUpdate)
+            {
+                UpdateLauncher();
+            }
         }
+        private void UpdateLauncher()
+        {
+            // Code to close the application
+            Close();
 
+            // Wait for the application to exit
+            while (Application.Current != null && Application.Current.MainWindow != null)
+            {
+                Thread.Sleep(100); // Wait for 0.1 seconds
+            }
+
+            // Download the new executable file
+            string downloadUrl = dlUrl; // Specify the URL to download the new executable
+            string newExePath = Path.Combine(rootPath, "temp.exe"); // Specify the path to save the downloaded file
+            using (var client = new WebClient())
+            {
+                client.DownloadFile(downloadUrl, newExePath);
+            }
+
+            // Rename the old executable file
+            string oldExePath = System.Reflection.Assembly.GetEntryAssembly().Location;
+            string backupExePath = Path.Combine(rootPath,"backup-launcher.exe"); ; // Specify the path to save the backup file
+            File.Move(oldExePath, backupExePath);
+
+            // Replace the old executable file with the new one
+            File.Move(newExePath, oldExePath);
+
+            // Launch the new executable
+            Process.Start(oldExePath);
+            /*WebClient webClient = new WebClient();
+            webClient.DownloadFileCompleted += (sender, e) =>
+            {
+                AddActionListItem($"Installing new launcher version");
+                if (e.Error == null)
+                {
+                    Application.Current.Shutdown();
+                    // Wait for the application to exit
+                    while (Application.Current != null && Application.Current.MainWindow != null)
+                    {
+                        Console.WriteLine("we sleepin");
+                        Thread.Sleep(100); // Wait for 0.1 seconds
+                    }
+
+                    // Launch the new executable
+                    Process.Start(Path.Combine(rootPath, "temp.exe"));
+                    string destinationPath = launcherExe;
+                    File.Copy(Path.Combine(rootPath, "temp.exe"), destinationPath, true);
+
+                    System.Windows.Application.Current.Shutdown();
+                    
+                }
+                else
+                {
+                    MessageBox.Show($"Error Downloading game files:{e.Error}");
+                    Console.WriteLine(e.Error);
+                    MessageBox.Show($"Error Downloading launcher");
+                    AddActionListItem($"Error Downloading launcher");
+                }
+            };
+            AddActionListItem($"Downloading new launcher version");
+            webClient.DownloadFileCompleted += new AsyncCompletedEventHandler(DownloadGameCompleteCallback);
+            webClient.DownloadFileAsync(new Uri(dlUrl), Path.Combine(rootPath, "temp.exe" ));*/
+        }
         private void CheckForUpdates()
         {
             fileUpdateList.Clear();
@@ -441,7 +566,7 @@ namespace Duskhaven_launcher
         }
         private void setButtonState()
         {
-            if (Status == LauncherStatus.ready || Status == LauncherStatus.failed || Status == LauncherStatus.install)
+            if (Status == LauncherStatus.ready || Status == LauncherStatus.failed || Status == LauncherStatus.install ||Status == LauncherStatus.launcherUpdate)
             {
                 DLButton.IsEnabled = true;
                 PlayButton.IsEnabled = true;
@@ -456,11 +581,16 @@ namespace Duskhaven_launcher
         {
             System.Diagnostics.Process.Start("https://duskhaven.servegame.com/account/register/");
         }
+
+        private void CloseButton_Clicked(object sender, RoutedEventArgs e)
+        {
+            Close();
+        }
     }
 
 
     /* use when a version is available */
-    struct Version
+    struct LauncherVersion
     {
         internal static Version zero = new Version(0, 0, 0);
 
@@ -468,14 +598,14 @@ namespace Duskhaven_launcher
         private short minor;
         private short subMinor;
 
-        internal Version(short _major, short _minor, short _subMinor)
+        internal LauncherVersion(short _major, short _minor, short _subMinor)
         {
             major = _major;
             minor = _minor;
             subMinor = _subMinor;
         }
 
-        internal Version(string _version)
+        internal LauncherVersion(string _version)
         {
             string[] _versionStrings = _version.Split('.');
             if (_versionStrings.Length != 3)
@@ -491,7 +621,7 @@ namespace Duskhaven_launcher
             subMinor = short.Parse(_versionStrings[2]);
         }
 
-        internal bool IsDifferentThan(Version _otherVersion)
+        internal bool IsDifferentThan(LauncherVersion _otherVersion)
         {
             if (major != _otherVersion.major)
             {
