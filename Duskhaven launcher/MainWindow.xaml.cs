@@ -1,8 +1,4 @@
-﻿using Discord;
-using Discord.Net;
-using Discord.WebSocket;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -21,6 +17,7 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Markup;
+using System.Web;
 
 namespace Duskhaven_launcher
 {
@@ -122,37 +119,55 @@ namespace Duskhaven_launcher
             // Replace these values with your own
             string owner = "laurensmarcelis";
             string repo = "Duskhaven-Launcher";
-
+            
             // Get the latest release information from GitHub API
             string apiUrl = $"https://api.github.com/repos/{owner}/{repo}/releases/latest";
             HttpWebRequest apiRequest = WebRequest.CreateHttp(apiUrl);
             apiRequest.UserAgent = "HttpClient";
             apiRequest.Accept = "application/vnd.github.v3+json";
             apiRequest.Method = "GET";
-
-            using (HttpWebResponse apiResponse = (HttpWebResponse)apiRequest.GetResponse())
+            HttpWebResponse apiResponse = (HttpWebResponse)apiRequest.GetResponse();
+            StreamReader streamReader = new StreamReader(apiResponse.GetResponseStream());
+            
+            string apiResponseString = streamReader.ReadToEnd();
+            try
             {
-                using (StreamReader streamReader = new StreamReader(apiResponse.GetResponseStream()))
+                // Deserialize the JSON string
+                var startTag = "\"tag_name\":\"";
+                var endTag = "\",";
+                var startIndex = apiResponseString.IndexOf(startTag) + startTag.Length;
+                var endIndex = apiResponseString.IndexOf(endTag, startIndex);
+                var tagName = apiResponseString.Substring(startIndex, endIndex - startIndex);
+                Console.WriteLine($"{tagName}");    
+
+                if (tagName == assemblyVersion.ToString())
                 {
-                    string apiResponseString = streamReader.ReadToEnd();
-                    dynamic apiResponseData = JsonConvert.DeserializeObject(apiResponseString);
-                    string tagName = apiResponseData["tag_name"];
-                    if (tagName == assemblyVersion.ToString() )
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        AddActionListItem($"Launcher out of date, newest version is {tagName}, your version is {assemblyVersion.ToString()}");
-                        Status = LauncherStatus.launcherUpdate;
-                        Console.WriteLine(apiResponseData["assets"][0]["browser_download_url"]);
-                        dlUrl = apiResponseData["assets"][0]["browser_download_url"];
-                        return false;
-                    }
-
-
+                    return true;
                 }
+                else
+                {
+                    AddActionListItem($"Launcher out of date, newest version is {tagName}, your version is {assemblyVersion.ToString()}");
+                    Status = LauncherStatus.launcherUpdate;
+                    var startdlUrl = "\"browser_download_url\":\"";
+                    var enddlUrl = "\"}],";
+                    var startIndexdlUrl = apiResponseString.IndexOf(startdlUrl) + startdlUrl.Length;
+                    var endIndexdlUrl = apiResponseString.IndexOf(enddlUrl, startIndexdlUrl);
+                    var dlUrl = apiResponseString.Substring(startIndexdlUrl, endIndexdlUrl - startIndexdlUrl);
+                    return false;
+                }
+
+                // Use the deserialized object
+                // ...
             }
+            catch (Exception ex)
+            {
+                // Log the error
+                MessageBox.Show($"Error checking for game updates:{ex}");
+                Debug.WriteLine(ex.Message);
+            }
+
+            return false;
+            
         }
         private void PlayButton_Click(object sender, RoutedEventArgs e)
         {
@@ -207,39 +222,6 @@ namespace Duskhaven_launcher
 
             // Launch the new executable
             Process.Start(oldExePath);
-            /*WebClient webClient = new WebClient();
-            webClient.DownloadFileCompleted += (sender, e) =>
-            {
-                AddActionListItem($"Installing new launcher version");
-                if (e.Error == null)
-                {
-                    Application.Current.Shutdown();
-                    // Wait for the application to exit
-                    while (Application.Current != null && Application.Current.MainWindow != null)
-                    {
-                        Console.WriteLine("we sleepin");
-                        Thread.Sleep(100); // Wait for 0.1 seconds
-                    }
-
-                    // Launch the new executable
-                    Process.Start(Path.Combine(rootPath, "temp.exe"));
-                    string destinationPath = launcherExe;
-                    File.Copy(Path.Combine(rootPath, "temp.exe"), destinationPath, true);
-
-                    System.Windows.Application.Current.Shutdown();
-                    
-                }
-                else
-                {
-                    MessageBox.Show($"Error Downloading game files:{e.Error}");
-                    Console.WriteLine(e.Error);
-                    MessageBox.Show($"Error Downloading launcher");
-                    AddActionListItem($"Error Downloading launcher");
-                }
-            };
-            AddActionListItem($"Downloading new launcher version");
-            webClient.DownloadFileCompleted += new AsyncCompletedEventHandler(DownloadGameCompleteCallback);
-            webClient.DownloadFileAsync(new Uri(dlUrl), Path.Combine(rootPath, "temp.exe" ));*/
         }
         private void CheckForUpdates()
         {
@@ -328,43 +310,6 @@ namespace Duskhaven_launcher
             {
                 InstallGameFiles(true);
             }
-
-
-            /* TODO: rewrite this if Versions/checksums are available to reduce load times
-             * if (File.Exists(versionFile))
-            {
-                Version localVersion = new Version(File.ReadAllText(versionFile));
-                VersionText.Text = localVersion.ToString();
-
-                try
-                {
-                   
-                    WebClient webClient = new WebClient();
-                    Version onlineVersion = new Version(webClient.DownloadString(""));
-
-                    if (onlineVersion.IsDifferentThan(localVersion))
-                    {
-                        InstallGameFiles(true, onlineVersion);
-
-                    }
-                    else
-                    {
-                        Status = LauncherStatus.ready;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Status = LauncherStatus.failed;
-                    MessageBox.Show($"Error checking for game updates:{ex}");
-                    throw;
-                }
-            }
-            else
-            {
-                InstallGameFiles(false, Version.zero);
-            } */
-
-
         }
 
         private string getFilePath(string file)
@@ -491,34 +436,6 @@ namespace Duskhaven_launcher
             {
                 
                 ZipFile.ExtractToDirectory(clientZip, rootPath);
-                using (var archive = ZipFile.OpenRead(clientZip))
-                {
-                    // Loop through the archive entries
-                    foreach (var entry in archive.Entries)
-                    {
-                        // Check if the entry is located in the desired directory
-                        if (entry.FullName.StartsWith("WoW 3.3.5"))
-                        {
-                            string newName = entry.FullName.Substring(entry.FullName.IndexOf("/") + 1);
-                            Console.WriteLine(newName);
-                            // If the entry is a folder, create the folder
-                            if (entry.FullName.EndsWith("/"))
-                            {
-                                Console.WriteLine(entry.FullName);
-                                
-                                string folderPath = Path.Combine(rootPath, newName);
-                                Directory.CreateDirectory(folderPath);
-                            }
-                            else
-                            {
-                                // If the entry is a file, extract the file to the target directory
-                                string targetFilePath = Path.Combine(@rootPath, newName);
-                                entry.ExtractToFile(targetFilePath, true);
-                            }
-                        }
-                    }
-                }
-                Directory.Delete(Path.Combine(rootPath, "WoW 3.3.5"), true);
                 File.Delete(clientZip);
                 VersionText.Text = "Extracting Done...";
                 AddActionListItem($"Installing done");
