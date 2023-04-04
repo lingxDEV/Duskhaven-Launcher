@@ -35,7 +35,6 @@ namespace Duskhaven_launcher
         private string rootPath;
         private string clientZip;
         private string gameExe;
-        private string launcherExe;
         private string dlUrl;
         private List<Item> fileList = new List<Item> ();
         private List<string> fileUpdateList = new List<string>();
@@ -86,7 +85,6 @@ namespace Duskhaven_launcher
             rootPath = Directory.GetCurrentDirectory();
             gameExe = Path.Combine(rootPath, "wow.exe");
             clientZip = Path.Combine(rootPath, "WoW%203.3.5.zip");
-            launcherExe = Path.Combine(rootPath, "Duskhaven launcher.exe");
 
 
         }
@@ -191,14 +189,7 @@ namespace Duskhaven_launcher
         }
         private void UpdateLauncher()
         {
-            // Code to close the application
-            Close();
-
-            // Wait for the application to exit
-            while (Application.Current != null && Application.Current.MainWindow != null)
-            {
-                Thread.Sleep(100); // Wait for 0.1 seconds
-            }
+            
 
             // Download the new executable file
             string downloadUrl = dlUrl; // Specify the URL to download the new executable
@@ -213,7 +204,14 @@ namespace Duskhaven_launcher
             string oldExePath = System.Reflection.Assembly.GetEntryAssembly().Location;
             string backupExePath = Path.Combine(rootPath,"backup-launcher.exe"); ; // Specify the path to save the backup file
             File.Move(oldExePath, backupExePath) ;
+            // Code to close the application
+            Close();
 
+            // Wait for the application to exit
+            while (Application.Current != null && Application.Current.MainWindow != null)
+            {
+                Thread.Sleep(100); // Wait for 0.1 seconds
+            }
             // Replace the old executable file with the new one
             File.Move(newExePath, oldExePath);
             // Launch the new executable
