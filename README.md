@@ -1,5 +1,5 @@
 # Duskhaven launcher
-
+## DISCLAIMER: DO NOT USE 1.4 anymore it has a breaking bug in the launcher updater. Only use 1.5 and up
 ## Download instructions
 - [download the latest version](https://github.com/laurensmarcelis/Duskhaven-Laucher/releases) (only executable is needed)
 ## Install instructions
