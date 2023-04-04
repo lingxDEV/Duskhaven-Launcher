@@ -4,20 +4,12 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
-using System.IO.Packaging;
-using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Reflection;
-using System.Runtime.Remoting.Channels;
-using System.Security.Cryptography;
-using System.Security.Policy;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Markup;
-using System.Web;
+
 
 namespace Duskhaven_launcher
 {
@@ -45,7 +37,7 @@ namespace Duskhaven_launcher
         private string gameExe;
         private string launcherExe;
         private string dlUrl;
-        private List<string> fileList = new List<string>();
+        private List<Item> fileList = new List<Item> ();
         private List<string> fileUpdateList = new List<string>();
         private LauncherStatus _status;
         private string uri = "https://duskhavenfiles.dev/";
@@ -71,7 +63,7 @@ namespace Duskhaven_launcher
                         PlayButton.Content = "Update Failed";
                         break;
                     case LauncherStatus.downloadingGame:
-                        PlayButton.Content = "DownLoading...";
+                        PlayButton.Content = "Downloading...";
                         break;
                     case LauncherStatus.downloadingUpdate:
                         PlayButton.Content = "Downloading update";
@@ -101,7 +93,10 @@ namespace Duskhaven_launcher
 
         private void Window_ContentRendered(object sender, EventArgs e)
         {
-            
+            if(File.Exists(Path.Combine(rootPath, "backup-launcher.exe")))
+            {
+                File.Delete(Path.Combine(rootPath, "backup-launcher.exe"));
+            }
 
             if(getLauncherVersion())
             {
@@ -148,11 +143,12 @@ namespace Duskhaven_launcher
                 {
                     AddActionListItem($"Launcher out of date, newest version is {tagName}, your version is {assemblyVersion.ToString()}");
                     Status = LauncherStatus.launcherUpdate;
+
                     var startdlUrl = "\"browser_download_url\":\"";
                     var enddlUrl = "\"}],";
                     var startIndexdlUrl = apiResponseString.IndexOf(startdlUrl) + startdlUrl.Length;
                     var endIndexdlUrl = apiResponseString.IndexOf(enddlUrl, startIndexdlUrl);
-                    var dlUrl = apiResponseString.Substring(startIndexdlUrl, endIndexdlUrl - startIndexdlUrl);
+                    dlUrl = apiResponseString.Substring(startIndexdlUrl, endIndexdlUrl - startIndexdlUrl);
                     return false;
                 }
 
@@ -206,6 +202,7 @@ namespace Duskhaven_launcher
 
             // Download the new executable file
             string downloadUrl = dlUrl; // Specify the URL to download the new executable
+            Console.WriteLine(downloadUrl);
             string newExePath = Path.Combine(rootPath, "temp.exe"); // Specify the path to save the downloaded file
             using (var client = new WebClient())
             {
@@ -215,13 +212,13 @@ namespace Duskhaven_launcher
             // Rename the old executable file
             string oldExePath = System.Reflection.Assembly.GetEntryAssembly().Location;
             string backupExePath = Path.Combine(rootPath,"backup-launcher.exe"); ; // Specify the path to save the backup file
-            File.Move(oldExePath, backupExePath);
+            File.Move(oldExePath, backupExePath) ;
 
             // Replace the old executable file with the new one
             File.Move(newExePath, oldExePath);
-
             // Launch the new executable
             Process.Start(oldExePath);
+
         }
         private void CheckForUpdates()
         {
@@ -232,8 +229,8 @@ namespace Duskhaven_launcher
             
             WebRequest request = WebRequest.Create(uri);
             WebResponse response = request.GetResponse();
-            Regex regex = new Regex("<a href=\"\\.\\/(?<name>.*(mpq|MPQ|wtf|exe))\">");
-
+            //Regex regex = new Regex("<a href=\"\\.\\/(?<name>.*(mpq|MPQ|exe))\">");
+            Regex regex = new Regex("(?s)<tr\\b[^>]*>(.*?(\"\\.\\/(?<name>\\S*(mpq|MPQ|exe))\").*?(datetime=\\\"(?<date>\\S*)\\\").*?)<\\/tr>");
             using (var reader = new StreamReader(response.GetResponseStream()))
             {
                 string result = reader.ReadToEnd();
@@ -248,55 +245,69 @@ namespace Duskhaven_launcher
                 foreach (Match match in matches)
                 {
                     if (!match.Success) { continue; }
-                    fileList.Add(match.Groups["name"].ToString());
+                    if (match.Groups["name"].ToString().Contains("DuskhavenLauncher")) { continue; }
+                    fileList.Add(new Item { Name = match.Groups["name"].ToString(), Date = DateTime.Parse(match.Groups["date"].ToString()) });;
                 }
             }
-            foreach (String file in fileList)
+    
+            foreach (Item file in fileList)
             {
+                Console.WriteLine(file.Name,file.Date);
                 long remoteFileSize = 0;
                 long localFileSize = 0;
-                
+
+                /* Later to check etag
+               var req = (HttpWebRequest)WebRequest.Create($"{uri}{file}");
+               req.Method = "HEAD";
+               req.MaximumResponseHeadersLength = int.MaxValue; // Set maximum response header length
+               var res = (HttpWebResponse)req.GetResponse())
+               var etag = res.Headers["ETag"];
+               Console.WriteLine(etag);*/
+
                 // Get the size of the remote file
-                var checkRequest = (HttpWebRequest)WebRequest.Create($"{uri}{file}");
+                var checkRequest = (HttpWebRequest)WebRequest.Create($"{uri}{file.Name}");
+
                 checkRequest.Method = "HEAD";
-                Console.WriteLine(file);
                 using (var checkResponse = checkRequest.GetResponse())
                 {
                     if (checkResponse is HttpWebResponse httpResponse)
                     {
+                        
+
                         remoteFileSize = httpResponse.ContentLength;
                     }
                 }
+
                 
                 // Get the size of the local file
-                if (File.Exists(getFilePath(file)))
+                if (File.Exists(getFilePath(file.Name)))
                 {
-                    localFileSize = new FileInfo(getFilePath(file)).Length;
+                    localFileSize = new FileInfo(getFilePath(file.Name)).Length;
                 }
                 else 
                 {
-                    fileUpdateList.Add(file);
-                    AddActionListItem($"{file} is not installed, adding to download list");
+                    fileUpdateList.Add(file.Name);
+                    AddActionListItem($"{file.Name} is not installed, adding to download list");
                     continue;
                 }
-                // Compare the sizes
-                if (remoteFileSize == localFileSize)
+                Console.WriteLine($"{file.Name}: size local {localFileSize.ToString()} and from remote {remoteFileSize.ToString()}");
+                Console.WriteLine(System.IO.File.GetLastWriteTime(getFilePath(file.Name)));
+                if ((remoteFileSize == localFileSize) && (file.Date < System.IO.File.GetLastWriteTime(getFilePath(file.Name))) )
                 {
                     
-                    AddActionListItem($"{file} is up to date, NO update required");
+                    AddActionListItem($"{file.Name} is up to date, NO update required");
                     Console.WriteLine("The remote file and the local file have the same size.");
                 }
                 else
                 {
-                    fileUpdateList.Add(file);
-                    AddActionListItem($"{file} is out of date, adding to update list");
-                    Console.WriteLine($"{file} is out of date and needs an update.");
+                    fileUpdateList.Add(file.Name);
+                    AddActionListItem($"{file.Name} is out of date, adding to update list");
+                    Console.WriteLine($"{file.Name} is out of date and needs an update.");
 
                 }
 
             }
-            Console.WriteLine(fileUpdateList.Count);
-            Console.WriteLine(fileList.Count);
+
             if (fileUpdateList.Count == 0)
             {
                 Status = LauncherStatus.ready;
@@ -566,4 +577,10 @@ namespace Duskhaven_launcher
             return $"{major}.{minor}.{subMinor}";
         }
     }
+}
+
+class Item
+{
+    public string Name { get; set; }
+    public DateTime Date { get; set; }
 }

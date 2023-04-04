@@ -8,7 +8,7 @@
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
         ContentRendered="Window_ContentRendered"
-        Title="Duskhaven Launcher" Height="450" Width="800" WindowStyle="None" Background="{x:Null}" Foreground="{x:Null}">
+        Title="Duskhaven Launcher" Height="450" Width="800" Background="{x:Null}" Foreground="{x:Null}" Icon="/images/favicon.ico" WindowStyle="None">
     <Grid>
         <Image Stretch="UniformToFill" Source="images/background.jpg" VerticalAlignment="Stretch" />
         <TextBlock Name="VersionText" VerticalAlignment="Bottom" HorizontalAlignment="Center" FontSize="20" Foreground="White" Panel.ZIndex="1" Width="800" TextAlignment="Center"/>
@@ -201,6 +201,6 @@
                     </Style.Triggers>
                 </Style>
             </Button.Style>
-        </Button> 
+        </Button>
     </Grid>
 </Window>
