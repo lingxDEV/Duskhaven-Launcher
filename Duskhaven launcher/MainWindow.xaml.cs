@@ -74,7 +74,7 @@ namespace Duskhaven_launcher
                         PlayButton.Content = "Downloading...";
                         break;
                     case LauncherStatus.downloadingUpdate:
-                        PlayButton.Content = "Downloading update";
+                        PlayButton.Content = "Downloading Update";
                         break;
                     case LauncherStatus.launcherUpdate:
                             PlayButton.Content = "Update Launcher";
@@ -238,14 +238,14 @@ namespace Duskhaven_launcher
         }
         private void CheckForUpdates()
         {
-            AddActionListItem("checking for valid 3.3.5 installation...");
+            AddActionListItem("checking for valid WoW 3.3.5 installation...");
             if (!File.Exists(getFilePath("common.MPQ")) && !File.Exists(getFilePath("common-2.MPQ"))) {
-                AddActionListItem("no wow installation found");
+                AddActionListItem("No WoW installation found");
                 
                 Status = LauncherStatus.installClient;
                 return;
             }
-            AddActionListItem("valid wow 3.3.5 installation found let's check the duskhaven files ...");
+            AddActionListItem("valid WoW 3.3.5 installation found, let's check the Duskhaven files...");
             fileUpdateList.Clear();
             fileList.Clear();   
             Status = LauncherStatus.checking;
@@ -417,7 +417,7 @@ namespace Duskhaven_launcher
             catch (Exception ex)
             {
                 Status = LauncherStatus.failed;
-                MessageBox.Show($"Error Installing game files:{ex}");
+                MessageBox.Show($"Error installing game files:{ex}");
                 throw;
             }
 
@@ -443,8 +443,8 @@ namespace Duskhaven_launcher
                 }
                 else
                 {
-                    MessageBox.Show($"Error Downloading game files:{e.Error}");
-                    AddActionListItem($"Error Downloading {files[index]}");
+                    MessageBox.Show($"Error downloading game files:{e.Error}");
+                    AddActionListItem($"Error downloading {files[index]}");
                 }
             };
             Console.WriteLine($"{uri}{files[index]}");
@@ -466,7 +466,7 @@ namespace Duskhaven_launcher
             catch (Exception ex)
             {
                 Status = LauncherStatus.failed;
-                MessageBox.Show($"Error Installing game files:{ex}");
+                MessageBox.Show($"Error installing game files:{ex}");
                 throw;
             }
         }
@@ -498,8 +498,8 @@ namespace Duskhaven_launcher
         }
         private void DownloadWotlkClientCompleteCallback(object sender, AsyncCompletedEventArgs e)
         {
-            AddActionListItem($"Installing Wotlk 3.3.5 client");
-            VersionText.Text = "Extracting Wotlk files to directory...";
+            AddActionListItem($"Installing WotLK 3.3.5 client");
+            VersionText.Text = "Extracting WotLK files to directory...";
             try
             {
                 ZipFile.ExtractToDirectory(clientZip, rootPath);
@@ -511,7 +511,7 @@ namespace Duskhaven_launcher
             catch (Exception ex)
             {
                 Status = LauncherStatus.failed;
-                MessageBox.Show($"Error Installing game files:{ex}");
+                MessageBox.Show($"Error installing game files:{ex}");
                 throw;
             }
         }
@@ -531,7 +531,7 @@ namespace Duskhaven_launcher
         {
             try
             {
-                AddActionListItem($"Downloading Wotlk 3.3.5 client");
+                AddActionListItem($"Downloading WotLK 3.3.5 client");
                 WebClient webClient = new WebClient();
                 Status = LauncherStatus.downloadingGame;
                 webClient.DownloadProgressChanged += new DownloadProgressChangedEventHandler(DownloadProgressCallback);
@@ -541,7 +541,7 @@ namespace Duskhaven_launcher
             catch (Exception ex)
             {
                 Status = LauncherStatus.failed;
-                MessageBox.Show($"Error Installing game files:{ex}");
+                MessageBox.Show($"Error installing game files:{ex}");
                 throw;
             }
 
