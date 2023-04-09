@@ -8,10 +8,10 @@ using System.Windows;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Duskhaven launcher")]
-[assembly: AssemblyDescription("this is an unofficial duskhaven launcher")]
+[assembly: AssemblyDescription("This is an unofficial Duskhaven launcher")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("No-company")]
-[assembly: AssemblyProduct("Duskhaven launcher")]
+[assembly: AssemblyProduct("Duskhaven Launcher")]
 [assembly: AssemblyCopyright("CC0")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

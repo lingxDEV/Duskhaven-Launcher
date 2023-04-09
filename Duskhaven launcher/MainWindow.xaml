@@ -129,7 +129,7 @@
                     </Style>
                 </Button.Style>
             </Button>
-            <TextBlock x:Name="Register" Margin="442,285,-374,0" TextDecorations="Underline" Foreground="white" TextWrapping="Wrap" Text="Don't Have an Account? Click Here to Register" FontFamily="Fonts\#Montserrat Regular" VerticalAlignment="Top" Width="332" MouseLeftButtonUp="Register_MouseLeftButtonUp" FontSize="14" Cursor="Hand">
+            <TextBlock x:Name="Register" Margin="442,285,-374,0" TextDecorations="Underline" Foreground="white" TextWrapping="Wrap" Text="Don't have an Account? Click here to register" FontFamily="Fonts\#Montserrat Regular" VerticalAlignment="Top" Width="332" MouseLeftButtonUp="Register_MouseLeftButtonUp" FontSize="14" Cursor="Hand">
                 <TextBlock.Effect>
                     <DropShadowEffect/>
                 </TextBlock.Effect>
