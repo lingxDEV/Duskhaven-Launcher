@@ -1,16 +1,20 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Net;
+using System.Net.Http.Headers;
+using System.Net.Http;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
 using System.Windows.Input;
+using Duskhaven_launcher.Pages;
 
 namespace Duskhaven_launcher
 {
@@ -96,6 +100,7 @@ namespace Duskhaven_launcher
 
         private void Window_ContentRendered(object sender, EventArgs e)
         {
+
             Assembly assembly = Assembly.GetExecutingAssembly();
             Version assemblyVersion = assembly.GetName().Version;
             AddActionListItem($"Launcher version: {assemblyVersion.ToString()}");
@@ -106,6 +111,7 @@ namespace Duskhaven_launcher
 
             if(getLauncherVersion())
             {
+                getNews();
                 setButtonState();
                 CheckForUpdates();
             }
@@ -239,7 +245,7 @@ namespace Duskhaven_launcher
                 Status = LauncherStatus.installClient;
                 return;
             }
-            AddActionListItem("valid wow 3.3.5 installation fonud let's check the duskhaven files ...");
+            AddActionListItem("valid wow 3.3.5 installation found let's check the duskhaven files ...");
             fileUpdateList.Clear();
             fileList.Clear();   
             Status = LauncherStatus.checking;
@@ -465,7 +471,31 @@ namespace Duskhaven_launcher
             }
         }
 
-
+        private async void getNews()
+        {
+           
+                HttpClient client = new HttpClient();
+                client.BaseAddress = new Uri("https://duskhaven-news.glitch.me/");
+            client.DefaultRequestHeaders.Clear();
+            //Define request data format
+            client.DefaultRequestHeaders.Add("User-Agent", "Other");
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            HttpResponseMessage response = await client.GetAsync("");
+            if (response.IsSuccessStatusCode)
+                {
+                    var result = response.Content.ReadAsStringAsync().Result;
+                    dynamic news = JsonConvert.DeserializeObject<dynamic>(result);
+                     Console.WriteLine(news);
+                    foreach(dynamic newsItem in news)
+                    {
+                        NewsList.Text += $"{newsItem.author.username}:\n {newsItem.content}\n\n";
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Error Code" + response.StatusCode + " : Message - " + response.ReasonPhrase);
+                }
+        }
         private void DownloadWotlkClientCompleteCallback(object sender, AsyncCompletedEventArgs e)
         {
             AddActionListItem($"Installing Wotlk 3.3.5 client");
@@ -490,8 +520,9 @@ namespace Duskhaven_launcher
         {
             string downloadedMBs = Math.Round(e.BytesReceived / 1024.0 / 1024.0, 0).ToString() + " MB";
             string totalMBs = Math.Round(e.TotalBytesToReceive / 1024.0 / 1024.0, 0).ToString() + " MB";
+            double speed = Math.Round(e.BytesReceived / 1024.0 / 1024.0 / e.ProgressPercentage);
             // Displays the operation identifier, and the transfer progress.
-            VersionText.Text = $"{(string)e.UserState}    downloaded {downloadedMBs} of {totalMBs} bytes. {e.ProgressPercentage} % complete...";
+            VersionText.Text = $"{(string)e.UserState}    downloaded {downloadedMBs} of {totalMBs} bytes. {e.ProgressPercentage} % complete... [{speed} MB/s]";
             dlProgress.Visibility = Visibility.Visible;
             dlProgress.Value = e.ProgressPercentage;
         }
@@ -565,6 +596,18 @@ namespace Duskhaven_launcher
         private void Discord_Click(object sender, RoutedEventArgs e)
         {
             System.Diagnostics.Process.Start("https://discord.gg/duskhaven");
+        }
+
+        private void Settings_Click(object sender, RoutedEventArgs e)
+        {
+            if(SettingsPage.isOpen) {
+                SettingsPage.SlideOut();
+            }
+            else
+            {
+                SettingsPage.SlideIn();
+            }
+            
         }
     }
 
