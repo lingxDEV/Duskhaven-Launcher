@@ -520,9 +520,9 @@ namespace Duskhaven_launcher
         {
             string downloadedMBs = Math.Round(e.BytesReceived / 1024.0 / 1024.0, 0).ToString() + " MB";
             string totalMBs = Math.Round(e.TotalBytesToReceive / 1024.0 / 1024.0, 0).ToString() + " MB";
-            double speed = Math.Round(e.BytesReceived / 1024.0 / 1024.0 / e.ProgressPercentage);
+
             // Displays the operation identifier, and the transfer progress.
-            VersionText.Text = $"{(string)e.UserState}    downloaded {downloadedMBs} of {totalMBs} bytes. {e.ProgressPercentage} % complete... [{speed} MB/s]";
+            VersionText.Text = $"{(string)e.UserState}    downloaded {downloadedMBs} of {totalMBs} bytes. {e.ProgressPercentage} % complete...";
             dlProgress.Visibility = Visibility.Visible;
             dlProgress.Value = e.ProgressPercentage;
         }
