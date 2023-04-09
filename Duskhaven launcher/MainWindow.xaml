@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Duskhaven_launcher"
+        xmlns:local="clr-namespace:Duskhaven_launcher.Pages"
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
@@ -12,7 +12,14 @@
     <Window.Background>
         <ImageBrush ImageSource="/images/background.jpg"/>
     </Window.Background>
-
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Buttons.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+       
+    </Window.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
@@ -27,16 +34,16 @@
 
         <Grid Background="Transparent" Grid.ColumnSpan="2" MouseDown="Grid_MouseDown" Panel.ZIndex="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition/>
-                <ColumnDefinition/>
-                <ColumnDefinition/>
-                <ColumnDefinition/>
-                <ColumnDefinition/>
-                <ColumnDefinition/>
-                <ColumnDefinition/>
-                <ColumnDefinition/>
+                <ColumnDefinition Width="25*"/>
+                <ColumnDefinition Width="25*"/>
+                <ColumnDefinition Width="25*"/>
+                <ColumnDefinition Width="25*"/>
+                <ColumnDefinition Width="25*"/>
+                <ColumnDefinition Width="25*"/>
+                <ColumnDefinition Width="39*"/>
+                <ColumnDefinition Width="11*"/>
             </Grid.ColumnDefinitions>
-            <Button x:Name="Close" Content="X" Grid.Column="7" Click="Close_Click" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="#FF0079D0" FontFamily="Fonts\#Montserrat-Black" FontSize="36" Margin="65,0,0,0" Cursor="Hand" HorizontalAlignment="Left" AllowDrop="True">
+            <Button x:Name="Settings" Content="Settings" Grid.Row="0" Grid.Column="1" Click="Settings_Click" Background="#66000000" BorderBrush="{x:Null}" Foreground="White" FontFamily="Fonts\#Montserrat-Black" Cursor="Hand" AllowDrop="True" Width="Auto" Height="NaN">
                 <Button.Style>
                     <Style TargetType="{x:Type Button}">
                         <Setter Property="Template">
@@ -56,7 +63,28 @@
                     </Style>
                 </Button.Style>
             </Button>
-            <Button x:Name="Discord" Grid.Column="6" Click="Discord_Click" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="#FF0079D0" FontFamily="Fonts\#Montserrat-Black" FontSize="36" Cursor="Hand" AllowDrop="True" Width="100">
+            <Button x:Name="Close" Grid.Column="7" Click="Close_Click" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="#FF0079D0" FontFamily="Fonts\#Montserrat-Black" FontSize="36" Margin="0,0,10,0" Cursor="Hand" HorizontalAlignment="Right" AllowDrop="True" Width="21">
+                <Image Source="images\xmark.png" Cursor="Hand"></Image>
+                <Button.Style>
+                    <Style TargetType="{x:Type Button}">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type Button}">
+                                    <Border Background="{TemplateBinding Background}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="Transparent"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+            <Button x:Name="Discord" Grid.Column="6" Click="Discord_Click" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="#FF0079D0" FontFamily="Fonts\#Montserrat-Black" FontSize="36" Cursor="Hand" AllowDrop="True" Margin="20,0,20,0" HorizontalAlignment="Right">
                 <Image Source="images\Discord.png" Cursor="Hand"></Image>
                 <Button.Style>
                     <Style TargetType="{x:Type Button}">
@@ -77,15 +105,45 @@
                     </Style>
                 </Button.Style>
             </Button>
-            <TextBlock HorizontalAlignment="Center" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Center" Height="25" Width="100" Grid.Column="1"/>
+            
             <Image Width="90" Source="/images/favicon.ico" Margin="10,10,0,10" HorizontalAlignment="Left"/>
-            <Border BorderBrush="White" Grid.ColumnSpan="10" BorderThickness="0,0,0,1">
+            <Border BorderBrush="White" Grid.ColumnSpan="8" BorderThickness="0,0,0,1" HorizontalAlignment="Right" Width="800" Height="1" VerticalAlignment="Bottom">
 
             </Border>
         </Grid>
+        <Grid Grid.Row="1" Grid.ColumnSpan="2" Panel.ZIndex="2">
+            <local:Settings x:Name="SettingsPage" Grid.ColumnSpan="2" Visibility="Visible"></local:Settings>
+            
+        </Grid>
+        <Grid Grid.Row="1" Grid.Column="0">
+            <TabControl Background="{x:Null}" BorderBrush="{x:Null}" Margin="20,10,0,10" >
+                <TabItem Style="{StaticResource TabStyle}" Header="News">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" Height="Auto"  Margin="-1,0,0,0">
+                        <TextBlock x:Name="NewsList" TextWrapping="Wrap" Padding="10,10,10,10" FontSize="12" FontWeight="Normal" >
+                            <TextBlock.Background>
+                                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                    <GradientStop Color="#CC000000" Offset="0"/>
+                                    <GradientStop Color="#33000000" Offset="1"/>
+                                </LinearGradientBrush>
+                            </TextBlock.Background>
+                        </TextBlock>
+                    </ScrollViewer>
+                </TabItem>
+            </TabControl>
 
-        <Grid Grid.Row="1">
-            <Button Name="PlayButton" Content="Checking For Updates" Click="PlayButton_Click" FontSize="25" FontWeight="Bold" Margin="434,316,-382,0" MinWidth="150" Padding="10,10,10,10" BorderThickness="0,0,0,0" UseLayoutRounding="False" IsEnabled="False" BorderBrush="{x:Null}" Height="43" VerticalAlignment="Top" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Bottom" FontFamily="Fonts\#Lovelo Black" Cursor="Hand">
+        </Grid>
+        <Grid Grid.Row="1" Grid.Column="1">
+            <ScrollViewer Margin="20,30,0,0" VerticalAlignment="Top" Height="262" Width="307" VerticalScrollBarVisibility="Auto" HorizontalAlignment="Left">
+                <TextBlock x:Name="ActionList" TextWrapping="Wrap" Foreground="white" Padding="10,10,10,10" Height="260" >
+                    <TextBlock.Background>
+                        <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                            <GradientStop Color="#CC000000" Offset="1"/>
+                            <GradientStop Color="#33000000" Offset="0"/>
+                        </LinearGradientBrush>
+                    </TextBlock.Background>
+                </TextBlock>
+            </ScrollViewer>
+            <Button Name="PlayButton" Content="Checking For Updates" Click="PlayButton_Click" FontSize="25" FontWeight="Bold" Margin="20,322,32,0" MinWidth="150" Padding="10,10,10,10" BorderThickness="0,0,0,0" UseLayoutRounding="False" IsEnabled="False" BorderBrush="{x:Null}" Height="43" VerticalAlignment="Top" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Bottom" FontFamily="Fonts\#Lovelo Black" Cursor="Hand">
                 <Button.Resources>
                     <Style TargetType="Border">
                         <Setter Property="CornerRadius" Value="2"></Setter>
@@ -129,82 +187,27 @@
                     </Style>
                 </Button.Style>
             </Button>
-            <TextBlock x:Name="Register" Margin="442,285,-374,0" TextDecorations="Underline" Foreground="white" TextWrapping="Wrap" Text="Don't have an Account? Click here to register" FontFamily="Fonts\#Montserrat Regular" VerticalAlignment="Top" Width="332" MouseLeftButtonUp="Register_MouseLeftButtonUp" FontSize="14" Cursor="Hand">
+            <TextBlock x:Name="Register" Margin="20,292,48,0" TextDecorations="Underline" Foreground="white" TextWrapping="Wrap" Text="Don't have an Account? Click here to register" FontFamily="Fonts\#Montserrat Regular" VerticalAlignment="Top" Width="332" MouseLeftButtonUp="Register_MouseLeftButtonUp" FontSize="14" Cursor="Hand">
                 <TextBlock.Effect>
                     <DropShadowEffect/>
                 </TextBlock.Effect>
             </TextBlock>
-            <Rectangle Stroke="Black" Grid.Row="0" Margin="-88,-87,-442,-42" Panel.ZIndex="-1">
-                <Rectangle.Fill>
-                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                        <GradientStop Color="#99000000" Offset="1"/>
-                        <GradientStop Color="#00000000" Offset="0"/>
-                    </LinearGradientBrush>
-                </Rectangle.Fill>
-            </Rectangle>
+
         </Grid>
-        <Button x:Name="Addons" Content="Addons" Click="AddonButton_Click" Height="16" FontWeight="Bold" Margin="10,0,0,410" VerticalAlignment="Bottom" HorizontalAlignment="Left" MinWidth="1" Padding="10,1,10,3" BorderThickness="1" UseLayoutRounding="False" IsEnabled="True" Width="60" Visibility="Hidden" >
-            <Button.Style>
+        <Rectangle Stroke="Black" Margin="-65,-17,-65,0" Panel.ZIndex="-1" Grid.ColumnSpan="2" Grid.RowSpan="3">
+            <Rectangle.Fill>
+                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                    <GradientStop Color="#99000000" Offset="1"/>
+                    <GradientStop Color="#00000000" Offset="0"/>
+                </LinearGradientBrush>
+            </Rectangle.Fill>
+        </Rectangle>
 
-                <Style TargetType="{x:Type Button}">
-                    <Setter Property="Padding" Value="10,10,10,10"/>
-                    <Setter Property="Margin" Value="10,10,10,10"/>
-
-                    <Setter Property="Background">
-                        <Setter.Value>
-                            <SolidColorBrush Color="#121212" Opacity="0.9"/>
-                        </Setter.Value>
-                    </Setter>
-                    <Setter Property="Foreground">
-                        <Setter.Value>
-                            <SolidColorBrush Color="#FFE08821" Opacity="1"/>
-                        </Setter.Value>
-                    </Setter>
-                    <Setter Property="BorderBrush">
-                        <Setter.Value>
-                            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                                <GradientStop Color="#FFE08821"/>
-                                <GradientStop Color="#FFFFDFBA" Offset="1"/>
-                            </LinearGradientBrush>
-                        </Setter.Value>
-                    </Setter>
-
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate TargetType="{x:Type Button}">
-                                <Border Background="{TemplateBinding Background}">
-                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                </Border>
-                            </ControlTemplate>
-                        </Setter.Value>
-                    </Setter>
-                    <Style.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Background" Value="#121212"/>
-                        </Trigger>
-                        <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Foreground" Value="Gray"/>
-                        </Trigger>
-                    </Style.Triggers>
-                </Style>
-            </Button.Style>
-        </Button>
-        <Grid Grid.Row="1" Grid.Column="0">
-            <ScrollViewer Margin="20,20,0,0" VerticalAlignment="Top" Height="267" Width="307" VerticalScrollBarVisibility="Auto" HorizontalAlignment="Left">
-                <TextBlock x:Name="ActionList" TextWrapping="Wrap" Foreground="white" Padding="10,10,10,10" >
-                    <TextBlock.Background>
-                        <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                            <GradientStop Color="#CC000000" Offset="1"/>
-                            <GradientStop Color="#33000000" Offset="0"/>
-                        </LinearGradientBrush>
-                    </TextBlock.Background>
-                </TextBlock>
-            </ScrollViewer>
-        </Grid>
         <Grid Grid.Row="2" Grid.ColumnSpan="2">
             <ProgressBar Name="dlProgress" Foreground="#FF00BDFF" Background="#99000000" Height="27" VerticalAlignment="Bottom" BorderBrush="{x:Null}" BorderThickness="0,0,0,0"/>
             <TextBlock Name="VersionText" VerticalAlignment="Bottom" HorizontalAlignment="Center" FontSize="20" Foreground="White" Panel.ZIndex="1" Width="800" TextAlignment="Center"/>
         </Grid>
+
 
     </Grid>
 </Window>
