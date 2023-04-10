@@ -112,8 +112,8 @@
             </Border>
         </Grid>
         <Grid Grid.Row="1" Grid.ColumnSpan="2" Panel.ZIndex="2">
-            <local:Settings x:Name="SettingsPage" Grid.ColumnSpan="2" Visibility="Visible"></local:Settings>
-            
+            <local:Settings x:Name="SettingsPage" Grid.ColumnSpan="2"/>
+
         </Grid>
         <Grid Grid.Row="1" Grid.Column="0">
             <TabControl Background="{x:Null}" BorderBrush="{x:Null}" Margin="20,10,0,10" >

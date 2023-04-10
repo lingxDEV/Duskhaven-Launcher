@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -15,6 +15,7 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Input;
 using Duskhaven_launcher.Pages;
+using System.Web.Script.Serialization;
 
 namespace Duskhaven_launcher
 {
@@ -473,28 +474,43 @@ namespace Duskhaven_launcher
 
         private async void getNews()
         {
-           
+            try
+            {
                 HttpClient client = new HttpClient();
                 client.BaseAddress = new Uri("https://duskhaven-news.glitch.me/");
-            client.DefaultRequestHeaders.Clear();
-            //Define request data format
-            client.DefaultRequestHeaders.Add("User-Agent", "Other");
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            HttpResponseMessage response = await client.GetAsync("");
-            if (response.IsSuccessStatusCode)
+                client.DefaultRequestHeaders.Clear();
+                //Define request data format
+                client.DefaultRequestHeaders.Add("User-Agent", "Other");
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                HttpResponseMessage response = await client.GetAsync("");
+                if (response.IsSuccessStatusCode)
                 {
-                    var result = response.Content.ReadAsStringAsync().Result;
-                    dynamic news = JsonConvert.DeserializeObject<dynamic>(result);
-                     Console.WriteLine(news);
-                    foreach(dynamic newsItem in news)
+                    var result = await response.Content.ReadAsStringAsync();
+                    try
                     {
-                        NewsList.Text += $"{newsItem.author.username}:\n {newsItem.content}\n\n";
+                        JavaScriptSerializer serializer = new JavaScriptSerializer();
+                        dynamic news = serializer.Deserialize<dynamic[]>(result);
+                        Console.Write(news);
+
+                        foreach (var newsItem in news)
+                        {
+                            NewsList.Text += $"{newsItem["channelName"]}:\n {newsItem["content"]}\n\n";
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Error parsing JSON: " + ex.Message);
                     }
                 }
                 else
                 {
                     MessageBox.Show("Error Code" + response.StatusCode + " : Message - " + response.ReasonPhrase);
                 }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error: " + ex.Message);
+            }
         }
         private void DownloadWotlkClientCompleteCallback(object sender, AsyncCompletedEventArgs e)
         {
@@ -585,7 +601,7 @@ namespace Duskhaven_launcher
 
         private void Register_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            System.Diagnostics.Process.Start("https://duskhaven.servegame.com/account/register/");
+            System.Diagnostics.Process.Start("https://www.duskhaven.net/account/register/");
         }
 
         private void Close_Click(object sender, RoutedEventArgs e)
