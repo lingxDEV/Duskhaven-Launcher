@@ -112,7 +112,7 @@ namespace Duskhaven_launcher
 
             if(getLauncherVersion())
             {
-                getNews();
+                //getNews();
                 setButtonState();
                 CheckForUpdates();
             }

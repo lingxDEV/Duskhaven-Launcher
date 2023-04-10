@@ -116,7 +116,7 @@
 
         </Grid>
         <Grid Grid.Row="1" Grid.Column="0">
-            <TabControl Background="{x:Null}" BorderBrush="{x:Null}" Margin="20,10,0,10" >
+            <TabControl Visibility="Hidden" Background="{x:Null}" BorderBrush="{x:Null}" Margin="20,10,0,10" >
                 <TabItem Style="{StaticResource TabStyle}" Header="News">
                     <ScrollViewer VerticalScrollBarVisibility="Auto" Height="Auto"  Margin="-1,0,0,0">
                         <TextBlock x:Name="NewsList" TextWrapping="Wrap" Padding="10,10,10,10" FontSize="12" FontWeight="Normal" >
